@@ -27,10 +27,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val files = ArrayList<String>()
+        val files = ArrayList<File>()
 //        files.add("1.png")
 //        files.add("2.jpg")
-        files.add("3.png")
+
+
+        files.add(File(Environment.getExternalStorageDirectory(), "3.png"))
 
         try {
             var _output = img2pdf(files)
@@ -44,30 +46,30 @@ class MainActivity : AppCompatActivity() {
 
         // Convert to base 64
         //        String base64 = pdf2base64(theOutput);
-
         theOutput = File(applicationContext.filesDir, outputFile)
 
         val base64 = getBase64FromPath2(theOutput)
         Log.d(">>>", base64)
 
         // display for testing here
-        val target = Intent(Intent.ACTION_VIEW)
-        val output = File(applicationContext.filesDir, outputFile)
-
-        target.setDataAndType(Uri.fromFile(output), "application/pdf")
-        target.flags = Intent.FLAG_ACTIVITY_NO_HISTORY
-
-        val intent = Intent.createChooser(target, "Open File")
-        try {
-            startActivity(intent)
-        } catch (e: ActivityNotFoundException) {
-            // Instruct the user to install a PDF reader here, or something
-        }
+//        val target = Intent(Intent.ACTION_VIEW)
+//        val output = File(applicationContext.filesDir, outputFile)
+//
+//        target.setDataAndType(Uri.fromFile(output), "application/pdf")
+//        target.flags = Intent.FLAG_ACTIVITY_NO_HISTORY
+//
+//        val intent = Intent.createChooser(target, "Open File")
+//
+//        try {
+//            startActivity(intent)
+//        } catch (e: ActivityNotFoundException) {
+//            // Instruct the user to install a PDF reader here, or something
+//        }
 
     }
 
     @Throws(IOException::class, DocumentException::class)
-    private fun img2pdf(files:  ArrayList<String>): ByteArrayOutputStream {
+    private fun img2pdf(files:  ArrayList<File>): ByteArrayOutputStream {
         //        File root = new File(Environment.getExternalStorageDirectory(), "0.png");
 
         //        File output = new File("output/", outputFile);
@@ -91,7 +93,7 @@ class MainActivity : AppCompatActivity() {
 
         for (f in files) {
             document.newPage()
-            val image = Image.getInstance(File(Environment.getExternalStorageDirectory(), f).absolutePath)
+            val image = Image.getInstance(f.absolutePath)
             image.setAbsolutePosition(0f, 0f)
             image.borderWidth = 0f
             image.scaleAbsolute(PageSize.A4)
@@ -101,19 +103,9 @@ class MainActivity : AppCompatActivity() {
         document.close()
 
         return baos
-
-
     }
 
     companion object {
-
-        fun getBaseDirectoryFromPathString(mPath: String, mContext: Context): File {
-
-            val mContextWrapper = ContextWrapper(mContext)
-
-            return mContextWrapper.getDir(mPath, Context.MODE_PRIVATE)
-        }
-
         fun getBase64FromPath2(file: File): String {
             var base64 = ""
             try {/*from w  w w.j a v  a2 s  .  c  om*/
@@ -125,7 +117,6 @@ class MainActivity : AppCompatActivity() {
             } catch (e: IOException) {
                 e.printStackTrace()
             }
-
             return base64
         }
 
