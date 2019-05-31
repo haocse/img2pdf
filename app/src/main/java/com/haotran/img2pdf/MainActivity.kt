@@ -16,34 +16,44 @@ import com.itextpdf.text.DocumentException
 import com.itextpdf.text.Image
 import com.itextpdf.text.PageSize
 import com.itextpdf.text.pdf.PdfWriter
+import java.io.*
 
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.IOException
 import java.util.ArrayList
 
 class MainActivity : AppCompatActivity() {
-    internal var outputFile = "output.pdf"
+    internal var outputFile = "capture_for_sending.pdf"
     internal lateinit var theOutput: File
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val files = ArrayList<String>()
+//        files.add("1.png")
+//        files.add("2.jpg")
+        files.add("3.png")
+
         try {
-            theOutput = img2pdf()
+            var _output = img2pdf(files)
+//            val cw = ContextWrapper(applicationContext)
+//            val directory = cw.getDir("output", Context.MODE_PRIVATE)
+            var fos = FileOutputStream(File(applicationContext.filesDir, outputFile))
+            _output.writeTo(fos)
         } catch (e: Exception) {
             e.printStackTrace()
         }
 
         // Convert to base 64
         //        String base64 = pdf2base64(theOutput);
+
+        theOutput = File(applicationContext.filesDir, outputFile)
+
         val base64 = getBase64FromPath2(theOutput)
         Log.d(">>>", base64)
 
         // display for testing here
         val target = Intent(Intent.ACTION_VIEW)
-        val output = File(Environment.getExternalStorageDirectory(), outputFile)
+        val output = File(applicationContext.filesDir, outputFile)
+
         target.setDataAndType(Uri.fromFile(output), "application/pdf")
         target.flags = Intent.FLAG_ACTIVITY_NO_HISTORY
 
@@ -57,22 +67,28 @@ class MainActivity : AppCompatActivity() {
     }
 
     @Throws(IOException::class, DocumentException::class)
-    private fun img2pdf(): File {
+    private fun img2pdf(files:  ArrayList<String>): ByteArrayOutputStream {
         //        File root = new File(Environment.getExternalStorageDirectory(), "0.png");
 
         //        File output = new File("output/", outputFile);
-        val output = File(Environment.getExternalStorageDirectory(), outputFile)
+//        val output = File(Environment.getExternalStorageDirectory(), outputFile)
 
-        if (output.exists()) output.delete()
 
-        val files = ArrayList<String>()
+//        val files = ArrayList<String>()
 //        files.add("1.png")
 //        files.add("2.jpg")
-        files.add("3.png")
+//        files.add("3.png")
 
         val document = Document()
-        PdfWriter.getInstance(document, FileOutputStream(output))
+//        PdfWriter.getInstance(document, FileOutputStream(output))
+
+        val baos = ByteArrayOutputStream()
+
+//        PdfWriter.getInstance(document, FileOutputStream(output))
+        PdfWriter.getInstance(document, baos)
+
         document.open()
+
         for (f in files) {
             document.newPage()
             val image = Image.getInstance(File(Environment.getExternalStorageDirectory(), f).absolutePath)
@@ -84,7 +100,7 @@ class MainActivity : AppCompatActivity() {
         }
         document.close()
 
-        return output
+        return baos
 
 
     }
